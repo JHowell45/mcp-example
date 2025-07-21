@@ -1,0 +1,22 @@
+[project]
+name = "fastapi-template"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.16.2",
+    "cryptography>=45.0.4",
+    "fastapi[standard]>=0.115.13",
+    "psycopg[binary]>=3.2.9",
+    "pydantic-settings>=2.10.1",
+    "sqlalchemy-utils>=0.41.2",
+    "sqlmodel>=0.0.24",
+]
+
+[dependency-groups]
+dev = [
+    "ipython>=9.3.0",
+    "mypy>=1.16.1",
+    "ruff>=0.12.0",
+]

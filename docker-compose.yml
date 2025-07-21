@@ -1,0 +1,63 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./example-api/.env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD=${DB_PASSWORD?Variable not set}
+      - POSTGRES_USER=${DB_USER?Variable not set}
+      - POSTGRES_DB=${DB_NAME?Variable not set}
+    volumes:
+      - example-api-db-data:/var/lib/postgresql/data
+    networks:
+      - example-api-network
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    # This is a problem for new projects and pretty much breaks fastapi and uv's ability to do what it needs to do with files.
+    user: ${DOCKER_CURRENT_USER?Variable not set}
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail 'http://127.0.0.1:80/api/utils/health-check/' || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
+    ports:
+      - "80:80"
+    env_file:
+      - ./example-api/.env
+    volumes:
+      - ./migrations:/app/migrations
+    command: "fastapi dev app/main.py --host 0.0.0.0 --port 80"
+    develop:
+      watch:
+        - action: sync
+          path: ./app
+          target: /app/app
+        - action: rebuild
+          path: pyproject.toml
+        - action: rebuild
+          path: ./example-api/.env
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+    networks:
+      - example-api-network
+networks:
+  example-api-network:
+    driver: bridge
+volumes:
+  example-api-db-data:
