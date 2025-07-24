@@ -1,9 +1,11 @@
 services:
-  db:
+  example-api-db:
+    build:
+      context: ./example-api
     image: pgvector/pgvector:pg17
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${API_DB_USER} -d ${API_DB_NAME}"]
       interval: 10s
       retries: 5
       start_period: 30s
@@ -11,19 +13,19 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - ./example-api/.env
+      - .env
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_PASSWORD=${DB_PASSWORD?Variable not set}
-      - POSTGRES_USER=${DB_USER?Variable not set}
-      - POSTGRES_DB=${DB_NAME?Variable not set}
+      - POSTGRES_PASSWORD=${API_DB_PASSWORD?Variable not set}
+      - POSTGRES_USER=${API_DB_USER?Variable not set}
+      - POSTGRES_DB=${API_DB_NAME?Variable not set}
     volumes:
       - example-api-db-data:/var/lib/postgresql/data
     networks:
       - example-api-network
-  app:
+  example-api-app:
     build:
-      context: .
+      context: ./example-api
       dockerfile: Dockerfile
     restart: always
     # This is a problem for new projects and pretty much breaks fastapi and uv's ability to do what it needs to do with files.
@@ -37,9 +39,9 @@ services:
     ports:
       - "80:80"
     env_file:
-      - ./example-api/.env
+      - .env
     volumes:
-      - ./migrations:/app/migrations
+      - ./example-api/migrations:/app/migrations
     command: "fastapi dev app/main.py --host 0.0.0.0 --port 80"
     develop:
       watch:
@@ -49,9 +51,9 @@ services:
         - action: rebuild
           path: pyproject.toml
         - action: rebuild
-          path: ./example-api/.env
+          path: .env
     depends_on:
-      db:
+      example-api-db:
         condition: service_healthy
         restart: true
     networks:
