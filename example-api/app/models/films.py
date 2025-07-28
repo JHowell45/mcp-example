@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlmodel import Field, SQLModel
 
 from .traits import DateTimestamps
@@ -21,3 +23,12 @@ class FilmBase(SharedBase):
 
 class Film(FilmBase, DateTimestamps, table=True):
     id: int | None = Field(default=None, primary_key=True)
+
+
+class FilmPublic(FilmBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class FilmCreate(FilmBase): ...
