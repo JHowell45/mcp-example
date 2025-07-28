@@ -16,6 +16,7 @@ class FilmGenre(FilmGenreBase, table=True):
 
 class FilmBase(SharedBase):
     description: str | None = Field(default=None, nullable=True)
+    rating: int | None = Field(default=None, ge=0, le=5, nullable=True)
 
 
 class Film(FilmBase, DateTimestamps, table=True):
