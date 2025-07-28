@@ -10,7 +10,7 @@ class SharedBase(SQLModel):
 class FilmGenreBase(SharedBase): ...
 
 
-class FilmGenre(FilmGenreBase, table=True):
+class FilmGenre(FilmGenreBase, DateTimestamps, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
 
