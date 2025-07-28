@@ -46,10 +46,10 @@ services:
     develop:
       watch:
         - action: sync
-          path: ./app
+          path: ./example-api/app
           target: /app/app
         - action: rebuild
-          path: pyproject.toml
+          path: ./example-api/pyproject.toml
         - action: rebuild
           path: .env
     depends_on:
