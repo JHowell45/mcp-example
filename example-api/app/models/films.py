@@ -43,7 +43,6 @@ class FilmDirectorCreate(FilmDirectorBase): ...
 class FilmBase(SharedBase):
     overview: str | None = Field()
     release_year: int = Field(ge=1920)
-    certificate: str = Field()
     runtime_minutes: int = Field(gt=0)
     imdb_rating: float = Field(ge=0, le=10)
     meta_score: int = Field(ge=0, le=100)
