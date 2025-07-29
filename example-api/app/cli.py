@@ -3,6 +3,7 @@ import typer
 from pandas import read_csv
 from pydantic import BaseModel, Field
 from rich import print
+from rich.progress import Progress
 from sqlmodel import Session, select
 
 from app.dependencies.db import engine
@@ -44,28 +45,30 @@ class FilmData(BaseModel):
 def import_films() -> None:
     df = read_csv("/app/datasets/imdb_top_1000.csv")
     print(df)
-    with Session(engine) as session:
-        for row in df.iterrows():
-            row = row[1].replace({np.nan: None})
-            data = FilmData(**row.to_dict())
-            director = session.exec(
-                select(FilmDirector).where(FilmDirector.name == data.director)
-            ).first()
-            if director is None:
-                director = FilmDirector(name=data.director)
+    with Progress() as progress:
+        pbar = progress.add_task("Importing Film CSV Data...", total=df.shape[0])
+        with Session(engine) as session:
+            for row in df.iterrows():
+                row = row[1].replace({np.nan: None})
+                data = FilmData(**row.to_dict())
+                director = session.exec(
+                    select(FilmDirector).where(FilmDirector.name == data.director)
+                ).first()
+                if director is None:
+                    director = FilmDirector(name=data.director)
 
-            created_film = Film(
-                name=data.title,
-                overview=data.overview,
-                release_year=data.release_year,
-                runtime_minutes=data.runtime_minutes,
-                imdb_rating=data.imdb_rating,
-                meta_score=data.meta_score,
-                director=director,
-            )
-            print(created_film)
-            session.add(created_film)
-            session.commit()
+                created_film = Film(
+                    name=data.title,
+                    overview=data.overview,
+                    release_year=data.release_year,
+                    runtime_minutes=data.runtime_minutes,
+                    imdb_rating=data.imdb_rating,
+                    meta_score=data.meta_score,
+                    director=director,
+                )
+                session.add(created_film)
+                session.commit()
+                progress.update(pbar, advance=1)
 
 
 if __name__ == "__main__":
