@@ -6,7 +6,7 @@ from rich import print
 from sqlmodel import Session
 
 from app.dependencies.db import engine
-from app.models.films import Film, FilmCreate, FilmDirectorCreate
+from app.models.films import Film, FilmDirector
 from app.models.users import User
 
 app = typer.Typer()
@@ -48,18 +48,18 @@ def import_films() -> None:
         for row in df.iterrows():
             row = row[1].replace({np.nan: None})
             data = FilmData(**row.to_dict())
-            created_film: FilmCreate = FilmCreate(
+            created_film = Film(
                 name=data.title,
                 overview=data.overview,
                 release_year=data.release_year,
                 runtime_minutes=data.runtime_minutes,
                 imdb_rating=data.imdb_rating,
                 meta_score=data.meta_score,
-                director=FilmDirectorCreate(name=data.director),
+                director=FilmDirector(name=data.director),
             )
             print(created_film)
-            film: Film = Film.model_validate(created_film)
-            print(film)
+            session.add(created_film)
+            session.commit()
 
 
 if __name__ == "__main__":
