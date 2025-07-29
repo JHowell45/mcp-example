@@ -45,7 +45,7 @@ class FilmBase(SharedBase):
     release_year: int = Field(ge=1920)
     runtime_minutes: int = Field(gt=0)
     imdb_rating: float = Field(ge=0, le=10)
-    meta_score: int = Field(ge=0, le=100)
+    meta_score: int | None = Field(ge=0, le=100)
 
 
 class Film(FilmBase, DateTimestamps, table=True):

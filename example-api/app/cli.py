@@ -3,7 +3,7 @@ import typer
 from pandas import read_csv
 from pydantic import BaseModel, Field
 from rich import print
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.dependencies.db import engine
 from app.models.films import Film, FilmDirector
@@ -48,6 +48,12 @@ def import_films() -> None:
         for row in df.iterrows():
             row = row[1].replace({np.nan: None})
             data = FilmData(**row.to_dict())
+            director = session.exec(
+                select(FilmDirector).where(FilmDirector.name == data.director)
+            ).first()
+            if director is None:
+                director = FilmDirector(name=data.director)
+
             created_film = Film(
                 name=data.title,
                 overview=data.overview,
@@ -55,7 +61,7 @@ def import_films() -> None:
                 runtime_minutes=data.runtime_minutes,
                 imdb_rating=data.imdb_rating,
                 meta_score=data.meta_score,
-                director=FilmDirector(name=data.director),
+                director=director,
             )
             print(created_film)
             session.add(created_film)
