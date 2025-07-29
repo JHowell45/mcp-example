@@ -16,9 +16,20 @@ class FilmGenre(FilmGenreBase, DateTimestamps, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
 
+class FilmDirectorBase(SharedBase): ...
+
+
+class FilmDirector(FilmDirectorBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+
 class FilmBase(SharedBase):
-    description: str | None = Field(default=None, nullable=True)
-    rating: int | None = Field(default=None, ge=0, le=5, nullable=True)
+    overview: str | None = Field()
+    release_year: int = Field(ge=1920)
+    certificate: str = Field()
+    runtime_minutes: int = Field(gt=0)
+    imdb_rating: float = Field(ge=0, le=10)
+    meta_score: int = Field(ge=0, le=100)
 
 
 class Film(FilmBase, DateTimestamps, table=True):
