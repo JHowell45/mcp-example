@@ -1,3 +1,4 @@
+import numpy as np
 import typer
 from pandas import read_csv
 from pydantic import BaseModel, Field
@@ -25,17 +26,18 @@ class FilmData(BaseModel):
     title: str = Field(alias="Series_Title")
     overview: str = Field(alias="Overview")
     release_year: int = Field(alias="Released_Year")
-    certificate: str = Field(alias="Certificate")
     imdb_rating: float = Field(alias="IMDB_Rating", ge=0, le=10)
-    meta_score: int = Field(alias="Meta_score", ge=0, le=100)
+    meta_score: int | None = Field(alias="Meta_score", ge=0, le=100)
     director: str = Field(alias="Director")
 
     runtime_pre: str = Field(alias="Runtime", repr=False)
+    runtime_minutes: int | None = None
     genre_data: str = Field(alias="Genre", repr=False)
+    genres: list[str] = Field(default_factory=list)
 
     def model_post_init(self, _) -> None:
         self.runtime_minutes: int = int(self.runtime_pre.split(" ")[0])
-        self.genres: list[str] = self.genre_data.split(",")
+        self.genres: list[str] = [genre.strip() for genre in self.genre_data.split(",")]
 
 
 @app.command(help="Imports the film data from the provided CSV")
@@ -44,6 +46,7 @@ def import_films():
     print(df)
     with Session(engine) as session:
         for row in df.iterrows():
+            row = row[1].replace({np.nan: None})
             print(row)
             print(FilmData(**row.to_dict()))
             film: Film | None = None
