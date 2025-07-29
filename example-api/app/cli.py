@@ -1,6 +1,6 @@
 import numpy as np
 import typer
-from pandas import read_csv
+from pandas import DataFrame, read_csv
 from pydantic import BaseModel, Field
 from rich import print
 from rich.progress import Progress
@@ -41,16 +41,21 @@ class FilmData(BaseModel):
         self.genres: list[str] = [genre.strip() for genre in self.genre_data.split(",")]
 
 
+def clean_data(unclean: DataFrame) -> DataFrame:
+    df = unclean.replace({np.nan: None})
+    df = df.drop_duplicates(["Series_Title"])
+    return df
+
+
 @app.command(help="Imports the film data from the provided CSV")
 def import_films() -> None:
-    df = read_csv("/app/datasets/imdb_top_1000.csv")
+    df: DataFrame = clean_data(read_csv("/app/datasets/imdb_top_1000.csv"))
     print(df)
     with Progress() as progress:
         pbar = progress.add_task("Importing Film CSV Data...", total=df.shape[0])
         with Session(engine) as session:
             for row in df.iterrows():
-                row = row[1].replace({np.nan: None})
-                data = FilmData(**row.to_dict())
+                data = FilmData(**row[1].to_dict())
                 director = session.exec(
                     select(FilmDirector).where(FilmDirector.name == data.director)
                 ).first()
