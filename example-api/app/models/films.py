@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 from .traits import DateTimestamps
 
@@ -31,8 +31,13 @@ class FilmDirectorBase(SharedBase): ...
 class FilmDirector(FilmDirectorBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
+    films: list["Film"] = Relationship(back_populates="director")
+
 
 class FilmDirectorPublic(FilmDirectorBase, PublicBase): ...
+
+
+class FilmDirectorCreate(FilmDirectorBase): ...
 
 
 class FilmBase(SharedBase):
@@ -47,8 +52,13 @@ class FilmBase(SharedBase):
 class Film(FilmBase, DateTimestamps, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
+    director_id: int = Field(foreign_key="filmdirector.id")
+    director: FilmDirector = Relationship(back_populates="films")
 
-class FilmPublic(FilmBase, PublicBase): ...
+
+class FilmPublic(FilmBase, PublicBase):
+    director: FilmDirectorPublic
 
 
-class FilmCreate(FilmBase): ...
+class FilmCreate(FilmBase):
+    director: FilmDirectorCreate
