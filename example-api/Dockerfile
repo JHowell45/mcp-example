@@ -34,6 +34,7 @@ COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
 
 COPY ./app /app/app
 COPY ./migrations /app/migrations
+COPY ./scripts /app/scripts
 COPY ./datasets /app/datasets
 
 # Sync the project
