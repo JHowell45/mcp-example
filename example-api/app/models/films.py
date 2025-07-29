@@ -28,7 +28,7 @@ class FilmGenrePublic(FilmGenreBase, PublicBase): ...
 class FilmDirectorBase(SharedBase): ...
 
 
-class FilmDirector(FilmDirectorBase, table=True):
+class FilmDirector(FilmDirectorBase, DateTimestamps, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
     films: list["Film"] = Relationship(back_populates="director")
