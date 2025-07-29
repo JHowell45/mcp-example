@@ -6,7 +6,7 @@ from rich import print
 from sqlmodel import Session
 
 from app.dependencies.db import engine
-from app.models.films import Film
+from app.models.films import Film, FilmCreate, FilmDirectorCreate
 from app.models.users import User
 
 app = typer.Typer()
@@ -41,15 +41,25 @@ class FilmData(BaseModel):
 
 
 @app.command(help="Imports the film data from the provided CSV")
-def import_films():
+def import_films() -> None:
     df = read_csv("/app/datasets/imdb_top_1000.csv")
     print(df)
     with Session(engine) as session:
         for row in df.iterrows():
             row = row[1].replace({np.nan: None})
-            print(row)
-            print(FilmData(**row.to_dict()))
-            film: Film | None = None
+            data = FilmData(**row.to_dict())
+            created_film: FilmCreate = FilmCreate(
+                name=data.title,
+                overview=data.overview,
+                release_year=data.release_year,
+                runtime_minutes=data.runtime_minutes,
+                imdb_rating=data.imdb_rating,
+                meta_score=data.meta_score,
+                director=FilmDirectorCreate(name=data.director),
+            )
+            print(created_film)
+            film: Film = Film.model_validate(created_film)
+            print(film)
 
 
 if __name__ == "__main__":
