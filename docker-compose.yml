@@ -21,6 +21,7 @@ services:
       - POSTGRES_DB=${API_DB_NAME?Variable not set}
     volumes:
       - example-api-db-data:/var/lib/postgresql/data
+      - ./example-api/scripts/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - example-api-network
   example-api-app:
