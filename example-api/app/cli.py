@@ -1,4 +1,5 @@
 import typer
+from pandas import read_csv
 from rich import print
 from sqlmodel import Session
 
@@ -18,9 +19,10 @@ def create_superuser(email: str, password: str):
         print(new_user)
 
 
-@app.command()
-def test():
-    pass
+@app.command(help="Imports the film data from the provided CSV")
+def import_films():
+    df = read_csv("/app/datasets/imdb_top_1000.csv")
+    print(df)
 
 
 if __name__ == "__main__":
