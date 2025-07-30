@@ -37,6 +37,9 @@ COPY ./migrations /app/migrations
 COPY ./scripts /app/scripts
 COPY ./datasets /app/datasets
 
+RUN mkdir /.cache
+RUN chmod -R 777 /.cache # don't do this in production - modify command to give permission to users who require it.
+
 # Sync the project
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
 RUN --mount=type=cache,target=/root/.cache/uv \

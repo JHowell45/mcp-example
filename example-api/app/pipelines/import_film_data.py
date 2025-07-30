@@ -5,10 +5,12 @@ from pandas import DataFrame, read_csv
 from pydantic import BaseModel, Field
 from rich import print
 from rich.progress import Progress
+from sentence_transformers import SentenceTransformer
 from sqlmodel import Session, col, func, select
 
 from app.dependencies.db import engine
 from app.models.films import Film, FilmDirector
+from app.models.vector_embeddings import Embedding
 
 
 class FilmData(BaseModel):
@@ -36,15 +38,17 @@ def clean_data(unclean: DataFrame) -> DataFrame:
 
 
 def import_pipeline(filepath: Path):
+    model = SentenceTransformer("all-MiniLM-L6-v2")
     df: DataFrame = clean_data(read_csv(filepath))
     print(df)
     with Progress() as progress:
-        pbar = progress.add_task("Importing Film CSV Data...", total=df.shape[0])
         with Session(engine) as session:
             if count := session.exec(select(func.count(col(Film.id)))).one():
+                print(count)
                 if count > 0:
                     print("Data already exists!")
                     return
+            pbar = progress.add_task("Importing Film CSV Data...", total=df.shape[0])
             for row in df.iterrows():
                 data = FilmData(**row[1].to_dict())
                 director = session.exec(
@@ -62,8 +66,9 @@ def import_pipeline(filepath: Path):
                     meta_score=data.meta_score,
                     director=director,
                 )
-                print(created_film)
-                return
+                created_film.embedding = Embedding(
+                    embedding=model.encode(created_film.embedding_text)
+                )
                 session.add(created_film)
                 session.commit()
                 progress.update(pbar, advance=1)
