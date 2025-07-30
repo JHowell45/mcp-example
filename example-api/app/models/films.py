@@ -56,8 +56,8 @@ class Film(FilmBase, DateTimestamps, table=True):
     director_id: int = Field(foreign_key="filmdirector.id")
     director: FilmDirector = Relationship(back_populates="films")
 
-    embedding_id: int = Field(foreign_key="embedding.id")
-    embedding: Embedding = Relationship(back_populates="film")
+    embedding_id: int | None = Field(default=None, foreign_key="embedding.id")
+    embedding: Embedding | None = Relationship(back_populates="film")
 
     @computed_field(repr=True)
     def embedding_text(self) -> str:
@@ -67,7 +67,7 @@ class Film(FilmBase, DateTimestamps, table=True):
 class FilmPublic(FilmBase, PublicBase):
     director: FilmDirectorPublic
     embedding_text: str
-    embedding: FilmEmbeddingPublic
+    embedding: FilmEmbeddingPublic | None
 
 
 class FilmCreate(FilmBase):

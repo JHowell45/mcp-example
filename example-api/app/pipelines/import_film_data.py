@@ -62,6 +62,8 @@ def import_pipeline(filepath: Path):
                     meta_score=data.meta_score,
                     director=director,
                 )
+                print(created_film)
+                return
                 session.add(created_film)
                 session.commit()
                 progress.update(pbar, advance=1)
