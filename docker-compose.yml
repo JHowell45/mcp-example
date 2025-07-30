@@ -24,6 +24,23 @@ services:
       - ./example-api/scripts/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - example-api-network
+  example-api-migration:
+    build:
+      context: ./example-api
+      dockerfile: Dockerfile
+    user: ${DOCKER_CURRENT_USER?Variable not set}
+    env_file:
+      - .env
+    volumes:
+      - ./example-api/migrations:/app/migrations
+      - ./example-api/datasets:/app/datasets
+    command: bash /app/scripts/prestart.sh
+    depends_on:
+      example-api-db:
+        condition: service_healthy
+        restart: true
+    networks:
+      - example-api-network
   example-api-app:
     build:
       context: ./example-api
@@ -58,6 +75,8 @@ services:
       example-api-db:
         condition: service_healthy
         restart: true
+      example-api-migration:
+        condition: service_completed_successfully
     networks:
       - example-api-network
 networks:
