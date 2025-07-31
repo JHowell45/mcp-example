@@ -57,7 +57,9 @@ class Film(FilmBase, DateTimestamps, table=True):
     director: FilmDirector = Relationship(back_populates="films")
 
     embedding_id: int | None = Field(default=None, foreign_key="embedding.id")
-    embedding: Embedding | None = Relationship(back_populates="film")
+    embedding: Embedding | None = Relationship(
+        back_populates="film", cascade_delete=True
+    )
 
     @computed_field(repr=True)
     @property
