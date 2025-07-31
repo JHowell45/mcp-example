@@ -33,7 +33,7 @@ class FilmDirectorBase(SharedBase): ...
 class FilmDirector(FilmDirectorBase, DateTimestamps, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
-    films: list["Film"] = Relationship(back_populates="director")
+    films: list["Film"] = Relationship(back_populates="director", cascade_delete=True)
 
 
 class FilmDirectorPublic(FilmDirectorBase, PublicBase): ...
