@@ -20,6 +20,7 @@ class Embedding(EmbeddingBase, DateTimestamps, table=True):
     id: int | None = Field(default=None, primary_key=True)
     embedding: Any = Field(sa_type=Vector(), repr=False)
 
+    film_id: int = Field(foreign_key="film.id")
     film: "Film" = Relationship(back_populates="embedding")
 
     @computed_field
