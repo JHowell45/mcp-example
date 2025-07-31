@@ -5,12 +5,12 @@ from pandas import DataFrame, read_csv
 from pydantic import BaseModel, Field
 from rich import print
 from rich.progress import Progress
-from sentence_transformers import SentenceTransformer
+from sqlalchemy import delete
 from sqlmodel import Session, col, func, select
 
 from app.dependencies.db import engine
 from app.models.films import Film, FilmDirector
-from app.models.vector_embeddings import Embedding
+from app.models.vector_embeddings import Embedding, embedding_model
 
 
 class FilmData(BaseModel):
@@ -37,8 +37,7 @@ def clean_data(unclean: DataFrame) -> DataFrame:
     return df
 
 
-def import_pipeline(filepath: Path):
-    model = SentenceTransformer("all-MiniLM-L6-v2")
+def import_pipeline(filepath: Path, reset: bool):
     df: DataFrame = clean_data(read_csv(filepath))
     print(df)
     with Progress() as progress:
@@ -46,8 +45,14 @@ def import_pipeline(filepath: Path):
             if count := session.exec(select(func.count(col(Film.id)))).one():
                 print(count)
                 if count > 0:
-                    print("Data already exists!")
-                    return
+                    if reset:
+                        print("Deleting all film data...")
+                        session.exec(delete(Film))
+                        session.commit()
+                        print("All Firm Data deleted!")
+                    else:
+                        print("Data already exists!")
+                        return
             pbar = progress.add_task("Importing Film CSV Data...", total=df.shape[0])
             for row in df.iterrows():
                 data = FilmData(**row[1].to_dict())
@@ -67,7 +72,7 @@ def import_pipeline(filepath: Path):
                     director=director,
                 )
                 created_film.embedding = Embedding(
-                    embedding=model.encode(created_film.embedding_text)
+                    embedding=embedding_model.encode(created_film.embedding_text)
                 )
                 session.add(created_film)
                 session.commit()

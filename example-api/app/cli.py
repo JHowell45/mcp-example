@@ -3,6 +3,7 @@ from pathlib import Path
 import typer
 from rich import print
 from sqlmodel import Session
+from typer import Option
 
 from app.dependencies.db import engine
 from app.models.users import User
@@ -22,8 +23,8 @@ def create_superuser(email: str, password: str):
 
 
 @app.command(help="Imports the film data from the provided CSV")
-def import_films() -> None:
-    import_pipeline(Path("/app/datasets/imdb_top_1000.csv"))
+def import_films(reset: bool = Option(default=False)) -> None:
+    import_pipeline(Path("/app/datasets/imdb_top_1000.csv"), reset)
 
 
 if __name__ == "__main__":
