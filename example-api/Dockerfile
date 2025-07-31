@@ -38,7 +38,8 @@ COPY ./scripts /app/scripts
 COPY ./datasets /app/datasets
 
 RUN mkdir /.cache
-RUN chmod -R 777 /.cache # don't do this in production - modify command to give permission to users who require it.
+#don't do this in production - modify command to give permission to users who require it.
+RUN chmod -R 777 /.cache
 
 # Sync the project
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
