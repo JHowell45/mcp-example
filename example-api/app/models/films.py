@@ -62,7 +62,7 @@ class Film(FilmBase, DateTimestamps, table=True):
     @computed_field(repr=True)
     @property
     def embedding_text(self) -> str:
-        return f"The name of this film is '{self.name}' and it was released in {self.release_year} It is about {self.overview}. The film is {self.runtime_minutes} minutes long and has an IMDB rating of {self.imdb_rating} and a meta score of {self.meta_score}."
+        return f"The name of this film is '{self.name}' and it was released in {self.release_year} It is about {self.overview}. The film is {self.runtime_minutes} minutes long and has an IMDB rating of {self.imdb_rating} and a meta score of {self.meta_score}. The film was directed by {self.director.name}"
 
 
 class FilmPublic(FilmBase, PublicBase):
