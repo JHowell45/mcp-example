@@ -85,7 +85,7 @@ services:
     user: ${DOCKER_CURRENT_USER?Variable not set}
     ports:
       - "9000:9000"
-    command: "fastmcp main.py:mcp"
+    command: "fastmcp /app/server.py:mcp"
 networks:
   example-api-network:
     driver: bridge
