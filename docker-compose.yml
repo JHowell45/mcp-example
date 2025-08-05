@@ -85,7 +85,20 @@ services:
     user: ${DOCKER_CURRENT_USER?Variable not set}
     ports:
       - "9000:9000"
-    command: "fastmcp /app/server.py:mcp"
+    command: "fastmcp run /app/server.py:mcp"
+    develop:
+      watch:
+        - action: sync
+          path: ./example-mcp/server.py
+          target: /app/server.py
+        - action: rebuild
+          path: ./example-mcp/pyproject.toml
+        - action: rebuild
+          path: .env
+    depends_on:
+      example-api-app:
+        condition: service_healthy
+        restart: true
 networks:
   example-api-network:
     driver: bridge
