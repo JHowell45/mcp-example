@@ -77,6 +77,15 @@ services:
         condition: service_completed_successfully
     networks:
       - example-api-network
+  example-mcp-server:
+    build:
+      context: ./example-mcp
+      dockerfile: Dockerfile.server
+    restart: always
+    user: ${DOCKER_CURRENT_USER?Variable not set}
+    ports:
+      - "9000:9000"
+    command: "fastmcp main.py:mcp"
 networks:
   example-api-network:
     driver: bridge
