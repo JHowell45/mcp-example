@@ -1,7 +1,5 @@
 services:
   example-api-db:
-    build:
-      context: ./example-api
     image: pgvector/pgvector:pg17
     restart: always
     healthcheck:
