@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlmodel import select
 
 from app.dependencies.db import SessionDep
@@ -32,6 +32,7 @@ def create_film(session: SessionDep, request: FilmCreate):
 
 class FilmVectorSearchRequest(BaseModel):
     query: str
+    limit: int = Field(default=5)
 
 
 @router.post("/vector/search", response_model=list[EmbeddingPublic])
@@ -40,5 +41,5 @@ def film_vector_search(session: SessionDep, request: FilmVectorSearchRequest):
     return session.exec(
         select(Embedding)
         .order_by(Embedding.embedding.l2_distance(query_embedding))
-        .limit(5)
+        .limit(request.limit)
     )
