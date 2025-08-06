@@ -129,9 +129,9 @@ class MovieMetaData(BaseModel):
     revenue: int
     genres_data: str = Field(alias="genres", repr=False)
     collection_data: str | None = Field(alias="belongs_to_collection", repr=False)
-    production_companies_data: str = Field(repr=False)
-    production_countries_data: str = Field(repr=False)
-    spoken_languages_data: str = Field(repr=False)
+    production_companies_data: str = Field(alias="production_companies", repr=False)
+    production_countries_data: str = Field(alias="production_countries", repr=False)
+    spoken_languages_data: str = Field(alias="spoken_languages", repr=False)
     release_date: datetime
     runtime: int
     status: str
