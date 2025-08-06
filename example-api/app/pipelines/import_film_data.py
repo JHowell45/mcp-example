@@ -1,8 +1,10 @@
 from pathlib import Path
+from zipfile import ZipFile
 
 import numpy as np
 from pandas import DataFrame, read_csv
 from pydantic import BaseModel, Field
+from requests import get
 from rich import print
 from rich.progress import Progress
 from sqlalchemy import delete
@@ -11,6 +13,17 @@ from sqlmodel import Session, col, func, select
 from app.dependencies.db import engine
 from app.models.films import Film, FilmDirector
 from app.models.vector_embeddings import Embedding, embedding_model
+
+DATASET_URL: str = (
+    "https://www.kaggle.com/api/v1/datasets/download/rounakbanik/the-movies-dataset"
+)
+
+SAVE_DIRECTORY: Path = Path("/app/datasets/")
+FILENAME: str = "movies-dataset.zip"
+
+SAVE_PATH: Path = SAVE_DIRECTORY / FILENAME
+
+MOVIES_METADATA: Path = SAVE_DIRECTORY / "movies_metadata.csv"
 
 
 class FilmData(BaseModel):
@@ -77,3 +90,33 @@ def import_pipeline(filepath: Path, reset: bool):
                 session.add(created_film)
                 session.commit()
                 progress.update(pbar, advance=1)
+
+
+def download_datasets(chunk_size: int) -> None:
+    results = get(DATASET_URL, stream=True)
+    with Progress() as progress:
+        pbar = progress.add_task(
+            "Downloading the movies dataset", total=len(results.content)
+        )
+        with open(SAVE_PATH, "wb") as file:
+            for chunk in results.iter_content(chunk_size=chunk_size):
+                file.write(chunk)
+                progress.update(pbar, advance=chunk_size)
+
+
+def unzip_dataset() -> None:
+    print("Extracting Dataset zip contents...")
+    with ZipFile(SAVE_PATH, "r") as zip:
+        zip.extractall(SAVE_DIRECTORY)
+    print("Finished dataset zip file extraction!")
+
+
+def import_dataset_metadata() -> None:
+    df = read_csv(MOVIES_METADATA)
+    print(df)
+
+
+def pipeline(chunk_size: int = 100) -> None:
+    download_datasets(chunk_size)
+    unzip_dataset()
+    import_dataset_metadata()
