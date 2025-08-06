@@ -1,8 +1,10 @@
+from datetime import datetime
 from pathlib import Path
 from zipfile import ZipFile
 
 import numpy as np
 from pandas import DataFrame, read_csv
+from pydantic import BaseModel, Field
 from requests import get
 from rich import print
 from rich.progress import Progress
@@ -92,13 +94,59 @@ def unzip_dataset() -> None:
     print("Finished dataset zip file extraction!")
 
 
+class SubMetaDataBase(BaseModel):
+    id: int
+    name: str
+
+
+class GenreMetaData(SubMetaDataBase): ...
+
+
+class CollectionMetaData(SubMetaDataBase): ...
+
+
+class ProductionCompanyMetaData(SubMetaDataBase): ...
+
+
+class ProductionCountryMetaData(BaseModel):
+    iso: str = Field(alias="iso_3166_1")
+    name: str
+
+
+class SpokenLanguageMetaData(BaseModel):
+    iso: str = Field(alias="iso_639_1")
+    name: str
+
+
+class MovieMetaData(BaseModel):
+    imdb_id: int
+    title: str
+    tagline: str | None
+    overview: str
+    popularity: float = Field(ge=0, le=100)
+    budget: int
+    revenue: int
+    genres: list[GenreMetaData]
+    collection: CollectionMetaData | None = Field(alias="belongs_to_collection")
+    production_companies: list[ProductionCompanyMetaData]
+    production_countries: list[ProductionCountryMetaData]
+    spoken_languages: list[SpokenLanguageMetaData]
+    release_date: datetime
+    runtime: int
+    status: str
+    vote_avg: float = Field(alias="vote_average", ge=0, le=10)
+    vote_count: int
+
+
 def import_dataset_metadata() -> None:
     df = read_csv(MOVIES_METADATA)
     print(df)
     print(df.columns)
     with Progress() as progress:
         pbar = progress.add_task("Importing movies metadata", total=len(df))
-        for index, data in df.iterrows():
+        for _, data in df.iterrows():
+            parsed_data: MovieMetaData = MovieMetaData.model_validate(data.to_dict())
+            print(parsed_data)
             progress.update(pbar, update=1)
 
 
