@@ -1,10 +1,11 @@
+import json
 from datetime import datetime
 from pathlib import Path
 from zipfile import ZipFile
 
 import numpy as np
 from pandas import DataFrame, read_csv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 from requests import get
 from rich import print
 from rich.progress import Progress
@@ -119,27 +120,74 @@ class SpokenLanguageMetaData(BaseModel):
 
 
 class MovieMetaData(BaseModel):
-    imdb_id: int
+    imdb_id: str
     title: str
     tagline: str | None
     overview: str
     popularity: float = Field(ge=0, le=100)
     budget: int
     revenue: int
-    genres: list[GenreMetaData]
-    collection: CollectionMetaData | None = Field(alias="belongs_to_collection")
-    production_companies: list[ProductionCompanyMetaData]
-    production_countries: list[ProductionCountryMetaData]
-    spoken_languages: list[SpokenLanguageMetaData]
+    genres_data: str = Field(alias="genres", repr=False)
+    collection_data: str | None = Field(alias="belongs_to_collection", repr=False)
+    production_companies_data: str = Field(repr=False)
+    production_countries_data: str = Field(repr=False)
+    spoken_languages_data: str = Field(repr=False)
     release_date: datetime
     runtime: int
     status: str
     vote_avg: float = Field(alias="vote_average", ge=0, le=10)
     vote_count: int
 
+    @property
+    @computed_field
+    def genres(self) -> list[GenreMetaData]:
+        return [
+            GenreMetaData.model_validate(genre)
+            for genre in json.loads(self.genres_data)
+        ]
+
+    @property
+    @computed_field
+    def collection(self) -> CollectionMetaData | None:
+        return (
+            CollectionMetaData.model_validate_json(self.collection_data)
+            if self.collection_data
+            else None
+        )
+
+    @property
+    @computed_field
+    def production_companies(self) -> list[ProductionCompanyMetaData]:
+        return [
+            ProductionCompanyMetaData.model_validate(company)
+            for company in json.loads(self.production_companies_data)
+        ]
+
+    @property
+    @computed_field
+    def production_countries(self) -> list[ProductionCountryMetaData]:
+        return [
+            ProductionCountryMetaData.model_validate(country)
+            for country in json.loads(self.production_countries_data)
+        ]
+
+    @property
+    @computed_field
+    def spoken_languages(self) -> list[SpokenLanguageMetaData]:
+        return [
+            SpokenLanguageMetaData.model_validate(language)
+            for language in json.loads(self.spoken_languages_data)
+        ]
+
+
+def clean_dataset(filepath: Path) -> DataFrame:
+    df = read_csv(filepath)
+    df.replace({np.nan: None}, inplace=True)
+    return df
+
 
 def import_dataset_metadata() -> None:
-    df = read_csv(MOVIES_METADATA)
+    df = clean_dataset(MOVIES_METADATA)
     print(df)
     print(df.columns)
     with Progress() as progress:
@@ -148,6 +196,7 @@ def import_dataset_metadata() -> None:
             parsed_data: MovieMetaData = MovieMetaData.model_validate(data.to_dict())
             print(parsed_data)
             progress.update(pbar, update=1)
+            return
 
 
 def pipeline(chunk_size: int = 100) -> None:
