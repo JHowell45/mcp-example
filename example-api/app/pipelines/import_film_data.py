@@ -77,6 +77,9 @@ def import_pipeline(filepath: Path, reset: bool):
 
 
 def download_datasets(chunk_size: int) -> None:
+    if SAVE_PATH.exists():
+        print("Zip file already exist!")
+        return
     results = get(DATASET_URL, stream=True)
     with Progress() as progress:
         pbar = progress.add_task(
@@ -138,16 +141,16 @@ class MovieMetaData(BaseModel):
     vote_avg: float = Field(alias="vote_average", ge=0, le=10)
     vote_count: int
 
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    @computed_field
     def genres(self) -> list[GenreMetaData]:
         return [
             GenreMetaData.model_validate(genre)
             for genre in json.loads(self.genres_data)
         ]
 
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    @computed_field
     def collection(self) -> CollectionMetaData | None:
         return (
             CollectionMetaData.model_validate_json(self.collection_data)
@@ -155,24 +158,24 @@ class MovieMetaData(BaseModel):
             else None
         )
 
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    @computed_field
     def production_companies(self) -> list[ProductionCompanyMetaData]:
         return [
             ProductionCompanyMetaData.model_validate(company)
             for company in json.loads(self.production_companies_data)
         ]
 
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    @computed_field
     def production_countries(self) -> list[ProductionCountryMetaData]:
         return [
             ProductionCountryMetaData.model_validate(country)
             for country in json.loads(self.production_countries_data)
         ]
 
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    @computed_field
     def spoken_languages(self) -> list[SpokenLanguageMetaData]:
         return [
             SpokenLanguageMetaData.model_validate(language)
@@ -193,6 +196,7 @@ def import_dataset_metadata() -> None:
     with Progress() as progress:
         pbar = progress.add_task("Importing movies metadata", total=len(df))
         for _, data in df.iterrows():
+            print(data)
             parsed_data: MovieMetaData = MovieMetaData.model_validate(data.to_dict())
             print(parsed_data)
             progress.update(pbar, update=1)
