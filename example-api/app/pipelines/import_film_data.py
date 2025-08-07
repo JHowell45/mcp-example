@@ -144,18 +144,18 @@ class MovieMetaData(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def genres(self) -> list[GenreMetaData]:
-        print(self.genres_data)
-        print(type(self.genres_data))
         return [
             GenreMetaData.model_validate(genre)
-            for genre in json.loads(self.genres_data)
+            for genre in json.loads(self.genres_data.replace("'", '"'))
         ]
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def collection(self) -> CollectionMetaData | None:
         return (
-            CollectionMetaData.model_validate_json(self.collection_data)
+            CollectionMetaData.model_validate_json(
+                self.collection_data.replace("'", '"')
+            )
             if self.collection_data
             else None
         )
@@ -165,7 +165,7 @@ class MovieMetaData(BaseModel):
     def production_companies(self) -> list[ProductionCompanyMetaData]:
         return [
             ProductionCompanyMetaData.model_validate(company)
-            for company in json.loads(self.production_companies_data)
+            for company in json.loads(self.production_companies_data.replace("'", '"'))
         ]
 
     @computed_field  # type: ignore[prop-decorator]
@@ -173,7 +173,7 @@ class MovieMetaData(BaseModel):
     def production_countries(self) -> list[ProductionCountryMetaData]:
         return [
             ProductionCountryMetaData.model_validate(country)
-            for country in json.loads(self.production_countries_data)
+            for country in json.loads(self.production_countries_data.replace("'", '"'))
         ]
 
     @computed_field  # type: ignore[prop-decorator]
@@ -181,7 +181,7 @@ class MovieMetaData(BaseModel):
     def spoken_languages(self) -> list[SpokenLanguageMetaData]:
         return [
             SpokenLanguageMetaData.model_validate(language)
-            for language in json.loads(self.spoken_languages_data)
+            for language in json.loads(self.spoken_languages_data.replace("'", '"'))
         ]
 
 
