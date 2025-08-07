@@ -40,7 +40,7 @@ class FilmCollection(SQLModel, table=True):
     films: list["Film"] = Relationship(back_populates="collection", cascade_delete=True)
 
 
-class Film(SQLModel, DateTimestamps, table=True):
+class Film(DateTimestamps, table=True):
     __tablename__ = "films"
 
     id: int | None = Field(default=None, primary_key=True)
