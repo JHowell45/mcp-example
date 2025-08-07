@@ -1,76 +1,56 @@
-from datetime import datetime
-
-from pydantic import computed_field
 from sqlmodel import Field, Relationship, SQLModel
 
 from .traits import DateTimestamps
-from .vector_embeddings import Embedding, FilmEmbeddingPublic
 
 
-class PublicBase(SQLModel):
-    id: int
-    created_at: datetime
-    updated_at: datetime
+class Genre(SQLModel, table=True):
+    __tablename__ = "genres"
 
-
-class SharedBase(SQLModel):
+    id: int | None = Field(default=None, primary_key=True)
     name: str = Field(unique=True)
 
 
-class FilmGenreBase(SharedBase): ...
+class ProductionCompany(SQLModel, table=True):
+    __tablename__ = "production_companies"
 
-
-class FilmGenre(FilmGenreBase, DateTimestamps, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
 
-class FilmGenrePublic(FilmGenreBase, PublicBase): ...
+class ProductionCountry(SQLModel, table=True):
+    __tablename__ = "production_countries"
 
-
-class FilmDirectorBase(SharedBase): ...
-
-
-class FilmDirector(FilmDirectorBase, DateTimestamps, table=True):
     id: int | None = Field(default=None, primary_key=True)
-
-    films: list["Film"] = Relationship(back_populates="director", cascade_delete=True)
-
-
-class FilmDirectorPublic(FilmDirectorBase, PublicBase): ...
+    iso: str = Field(unique=True)
+    name: str = Field(unique=True)
 
 
-class FilmDirectorCreate(FilmDirectorBase): ...
+class SpokenLanguage(SQLModel, table=True):
+    __tablename__ = "spoken_languages"
 
-
-class FilmBase(SharedBase):
-    overview: str | None = Field()
-    release_year: int = Field(ge=1920)
-    runtime_minutes: int = Field(gt=0)
-    imdb_rating: float = Field(ge=0, le=10)
-    meta_score: int | None = Field(ge=0, le=100)
-
-
-class Film(FilmBase, DateTimestamps, table=True):
     id: int | None = Field(default=None, primary_key=True)
-
-    director_id: int = Field(foreign_key="filmdirector.id")
-    director: FilmDirector = Relationship(back_populates="films")
-
-    embedding: Embedding | None = Relationship(
-        back_populates="film", cascade_delete=True
-    )
-
-    @computed_field(repr=True)
-    @property
-    def embedding_text(self) -> str:
-        return f"The name of this film is '{self.name}' and it was released in {self.release_year} It is about {self.overview}. The film is {self.runtime_minutes} minutes long and has an IMDB rating of {self.imdb_rating} and a meta score of {self.meta_score}. The film was directed by {self.director.name}"
+    iso: str = Field(unique=True)
+    name: str = Field(unique=True)
 
 
-class FilmPublic(FilmBase, PublicBase):
-    director: FilmDirectorPublic
-    embedding_text: str
-    embedding: FilmEmbeddingPublic | None
+class FilmCollection(SQLModel, table=True):
+    __tablename__ = "collections"
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(unique=True)
+
+    films: list["Film"] = Relationship(back_populates="collection", cascade_delete=True)
 
 
-class FilmCreate(FilmBase):
-    director: FilmDirectorCreate
+class Film(SQLModel, DateTimestamps, table=True):
+    __tablename__ = "films"
+
+    id: int | None = Field(default=None, primary_key=True)
+    imdb_id: str
+    title: str
+    tagline: str | None = Field(default=None)
+    overview: str
+    popularity: float = Field(ge=0, le=100)
+    budget: int
+    revenue: int
+
+    collection_id: int | None = Field(default=None, foreign_key="", ondelete="CASCADE")
+    collection: FilmCollection = Relationship(back_populates="films")
