@@ -144,6 +144,8 @@ class MovieMetaData(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def genres(self) -> list[GenreMetaData]:
+        print(self.genres_data)
+        print(type(self.genres_data))
         return [
             GenreMetaData.model_validate(genre)
             for genre in json.loads(self.genres_data)
