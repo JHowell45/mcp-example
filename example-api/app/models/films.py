@@ -3,11 +3,20 @@ from sqlmodel import Field, Relationship, SQLModel
 from .traits import DateTimestamps
 
 
+class FilmGenreLink(SQLModel, table=True):
+    genre_id: int = Field(foreign_key="genres.id", primary_key=True)
+    film_id: int = Field(foreign_key="films.id", primary_key=True)
+
+
 class Genre(SQLModel, table=True):
     __tablename__ = "genres"
 
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(unique=True)
+
+    films: list["Film"] = Relationship(
+        back_populates="genres", link_model=FilmGenreLink
+    )
 
 
 class ProductionCompany(SQLModel, table=True):
@@ -54,3 +63,5 @@ class Film(DateTimestamps, table=True):
 
     collection_id: int | None = Field(default=None, foreign_key="", ondelete="CASCADE")
     collection: FilmCollection = Relationship(back_populates="films")
+
+    genres: list[Genre] = Relationship(back_populates="films", link_model=FilmGenreLink)
