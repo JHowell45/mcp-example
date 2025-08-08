@@ -1,18 +1,18 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from pydantic import BaseModel, Field
 from sqlmodel import select
 
 from app.dependencies.db import SessionDep
-from app.models.films import Film, FilmCreate, FilmPublic
+from app.models.films import Film
 from app.models.vector_embeddings import Embedding, embedding_model
 from app.routes.api.v1.responses.embeddings import EmbeddingPublic
 
 router = APIRouter(prefix="/films", tags=["Films"])
 
 
-@router.get("/", response_model=list[FilmPublic])
+@router.get("/")
 def all_films(
     session: SessionDep,
     offset: Annotated[int, Query(ge=0)] = 0,
@@ -21,8 +21,8 @@ def all_films(
     return session.exec(select(Film).offset(offset).limit(limit)).all()
 
 
-@router.post("/", response_model=FilmPublic)
-def create_film(session: SessionDep, request: FilmCreate):
+@router.post("/")
+def create_film(session: SessionDep, request: Request):
     if db_film := Film.model_validate(request):
         session.add(db_film)
         session.commit()
