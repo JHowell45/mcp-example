@@ -13,7 +13,7 @@ from sqlalchemy import delete
 from sqlmodel import Session, col, func, select
 
 from app.dependencies.db import engine
-from app.models.films import Film, FilmDirector
+from app.models.films import Film
 from app.models.vector_embeddings import Embedding, embedding_model
 
 DATASET_URL: str = (
