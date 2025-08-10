@@ -1,28 +1,28 @@
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
 
 from .traits import DateTimestamps
 
 
-class FilmGenreLink(SQLModel, table=True):
+class FilmGenreLink(DateTimestamps, table=True):
     genre_id: int = Field(foreign_key="genres.id", primary_key=True)
     film_id: int = Field(foreign_key="films.id", primary_key=True)
 
 
-class FilmProductionCompanyLink(SQLModel, table=True):
+class FilmProductionCompanyLink(DateTimestamps, table=True):
     production_company_id: int = Field(
         foreign_key="production_companies.id", primary_key=True
     )
     film_id: int = Field(foreign_key="films.id", primary_key=True)
 
 
-class FilmProductionCountryLink(SQLModel, table=True):
+class FilmProductionCountryLink(DateTimestamps, table=True):
     production_country_id: int = Field(
         foreign_key="production_countries.id", primary_key=True
     )
     film_id: int = Field(foreign_key="films.id", primary_key=True)
 
 
-class Genre(SQLModel, table=True):
+class Genre(DateTimestamps, table=True):
     __tablename__ = "genres"
 
     id: int | None = Field(default=None, primary_key=True)
@@ -33,7 +33,7 @@ class Genre(SQLModel, table=True):
     )
 
 
-class ProductionCompany(SQLModel, table=True):
+class ProductionCompany(DateTimestamps, table=True):
     __tablename__ = "production_companies"
 
     id: int | None = Field(default=None, primary_key=True)
@@ -43,7 +43,7 @@ class ProductionCompany(SQLModel, table=True):
     )
 
 
-class ProductionCountry(SQLModel, table=True):
+class ProductionCountry(DateTimestamps, table=True):
     __tablename__ = "production_countries"
 
     id: int | None = Field(default=None, primary_key=True)
@@ -55,7 +55,7 @@ class ProductionCountry(SQLModel, table=True):
     )
 
 
-class SpokenLanguage(SQLModel, table=True):
+class SpokenLanguage(DateTimestamps, table=True):
     __tablename__ = "spoken_languages"
 
     id: int | None = Field(default=None, primary_key=True)
@@ -67,7 +67,7 @@ class SpokenLanguage(SQLModel, table=True):
     )
 
 
-class FilmCollection(SQLModel, table=True):
+class FilmCollection(DateTimestamps, table=True):
     __tablename__ = "collections"
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(unique=True)
