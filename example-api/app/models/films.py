@@ -37,6 +37,7 @@ class ProductionCompany(DateTimestamps, table=True):
     __tablename__ = "production_companies"
 
     id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(unique=True)
 
     films: list["Film"] = Relationship(
         back_populates="production_companies", link_model=FilmGenreLink
