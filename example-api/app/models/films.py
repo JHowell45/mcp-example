@@ -8,6 +8,25 @@ class FilmGenreLink(SQLModel, table=True):
     film_id: int = Field(foreign_key="films.id", primary_key=True)
 
 
+class FilmProductionCompanyLink(SQLModel, table=True):
+    production_company_id: int = Field(
+        foreign_key="production_companies.id", primary_key=True
+    )
+    film_id: int = Field(foreign_key="films.id", primary_key=True)
+
+
+class FilmProductionCountryLink(SQLModel, table=True):
+    production_country_id: int = Field(
+        foreign_key="production_countries.id", primary_key=True
+    )
+    film_id: int = Field(foreign_key="films.id", primary_key=True)
+
+
+class FilmSpokenLanguageLink(SQLModel, table=True):
+    spoken_language_id: int = Field(foreign_key="spoken_languages.id", primary_key=True)
+    film_id: int = Field(foreign_key="films.id", primary_key=True)
+
+
 class Genre(SQLModel, table=True):
     __tablename__ = "genres"
 
