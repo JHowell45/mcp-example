@@ -222,11 +222,14 @@ def create_db_model(data: MovieMetaData) -> Film:
         spoken_languages=[
             SpokenLanguage.model_validate(sl) for sl in data.spoken_languages
         ],
-        collection=FilmCollection.model_validate(data.collection),
+        collection=FilmCollection.model_validate(data.collection)
+        if data.collection
+        else None,
     )
 
 
-def import_dataset_metadata(reset: bool) -> None:
+def import_dataset_metadata(reset: bool, save_size: int) -> None:
+    current_size: int = 0
     df = clean_dataset(MOVIES_METADATA)
     print(df)
     print(df.columns)
@@ -241,15 +244,17 @@ def import_dataset_metadata(reset: bool) -> None:
                     data.to_dict()
                 )
                 print(parsed_data)
-                db_model = create_db_model(parsed_data)
-                print(db_model)
-                session.add(db_model)
-                session.commit()
+                # db_model = create_db_model(parsed_data)
+                # print(db_model)
+                # session.add(db_model)
+                # current_size += 1
+                # if current_size >= save_size:
+                #     session.commit()
+                #     current_size = 0
                 progress.update(pbar, update=1)
-                return
 
 
-def pipeline(reset: bool = False, chunk_size: int = 100) -> None:
+def pipeline(reset: bool, chunk_size: int, save_size: int) -> None:
     download_datasets(chunk_size)
     unzip_dataset()
-    import_dataset_metadata(reset)
+    import_dataset_metadata(reset, save_size)

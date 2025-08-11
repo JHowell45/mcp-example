@@ -21,8 +21,12 @@ def create_superuser(email: str, password: str):
 
 
 @app.command(help="Imports the film data from the provided CSV")
-def import_films(reset: bool = Option(default=False)) -> None:
-    pipeline()
+def import_films(
+    reset: bool = Option(default=False),
+    chunk_size: int = Option(default=100),
+    save_size: int = Option(default=100),
+) -> None:
+    pipeline(reset, chunk_size, save_size)
 
 
 if __name__ == "__main__":
