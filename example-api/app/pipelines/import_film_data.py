@@ -13,7 +13,7 @@ from sqlalchemy import delete
 from sqlmodel import Session, col, func, select
 
 from app.dependencies.db import engine
-from app.models.films import (  # noqa
+from app.models.films import (
     Film,
     FilmCollection,
     Genre,
