@@ -41,22 +41,28 @@ def clean_data(unclean: DataFrame) -> DataFrame:
     return df
 
 
+def reset_table(session: Session, reset: bool) -> bool:
+    if count := session.exec(select(func.count(col(Film.id)))).one():
+        print(count)
+        if count > 0:
+            if reset:
+                print("Deleting all film data...")
+                session.exec(delete(Film))
+                session.commit()
+                print("All Firm Data deleted!")
+            else:
+                print("Data already exists!")
+                return True
+    return False
+
+
 def import_pipeline(filepath: Path, reset: bool):
     df: DataFrame = clean_data(read_csv(filepath))
     print(df)
     with Progress() as progress:
         with Session(engine) as session:
-            if count := session.exec(select(func.count(col(Film.id)))).one():
-                print(count)
-                if count > 0:
-                    if reset:
-                        print("Deleting all film data...")
-                        session.exec(delete(Film))
-                        session.commit()
-                        print("All Firm Data deleted!")
-                    else:
-                        print("Data already exists!")
-                        return
+            if reset_table(session, reset):
+                return
             pbar = progress.add_task("Importing Film CSV Data...", total=df.shape[0])
             for row in df.iterrows():
                 data = FilmData(**row[1].to_dict())
@@ -220,13 +226,15 @@ def create_db_model(data: MovieMetaData) -> Film:
     )
 
 
-def import_dataset_metadata() -> None:
+def import_dataset_metadata(reset: bool) -> None:
     df = clean_dataset(MOVIES_METADATA)
     print(df)
     print(df.columns)
     with Progress() as progress:
         pbar = progress.add_task("Importing movies metadata", total=len(df))
         with Session(engine) as session:
+            if reset_table(session, reset):
+                return
             for _, data in df.iterrows():
                 print(data)
                 parsed_data: MovieMetaData = MovieMetaData.model_validate(
@@ -241,7 +249,7 @@ def import_dataset_metadata() -> None:
                 return
 
 
-def pipeline(chunk_size: int = 100) -> None:
+def pipeline(reset: bool = False, chunk_size: int = 100) -> None:
     download_datasets(chunk_size)
     unzip_dataset()
-    import_dataset_metadata()
+    import_dataset_metadata(reset)
