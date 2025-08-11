@@ -226,14 +226,19 @@ def import_dataset_metadata() -> None:
     print(df.columns)
     with Progress() as progress:
         pbar = progress.add_task("Importing movies metadata", total=len(df))
-        for _, data in df.iterrows():
-            print(data)
-            parsed_data: MovieMetaData = MovieMetaData.model_validate(data.to_dict())
-            print(parsed_data)
-            db_model = create_db_model(parsed_data)
-            print(db_model)
-            progress.update(pbar, update=1)
-            return
+        with Session(engine) as session:
+            for _, data in df.iterrows():
+                print(data)
+                parsed_data: MovieMetaData = MovieMetaData.model_validate(
+                    data.to_dict()
+                )
+                print(parsed_data)
+                db_model = create_db_model(parsed_data)
+                print(db_model)
+                session.add(db_model)
+                session.commit()
+                progress.update(pbar, update=1)
+                return
 
 
 def pipeline(chunk_size: int = 100) -> None:
