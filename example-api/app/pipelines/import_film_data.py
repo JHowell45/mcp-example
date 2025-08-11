@@ -175,9 +175,11 @@ class MovieMetaData(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def production_companies(self) -> list[ProductionCompanyMetaData]:
+        d = self.production_companies_data.replace("'", '"')
+        d = self.production_companies_data.replace('d"', "d'")
         return [
             ProductionCompanyMetaData.model_validate(company)
-            for company in json.loads(self.production_companies_data.replace("'", '"'))
+            for company in json.loads(d)
         ]
 
     @computed_field  # type: ignore[prop-decorator]
@@ -244,6 +246,7 @@ def import_dataset_metadata(reset: bool, save_size: int) -> None:
                     data.to_dict()
                 )
                 print(parsed_data)
+
                 # db_model = create_db_model(parsed_data)
                 # print(db_model)
                 # session.add(db_model)
