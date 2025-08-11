@@ -13,7 +13,7 @@ from sqlalchemy import delete
 from sqlmodel import Session, col, func, select
 
 from app.dependencies.db import engine
-from app.models.films import Film
+from app.models.films import Film, Genre
 from app.models.vector_embeddings import Embedding, embedding_model
 
 DATASET_URL: str = (
@@ -99,7 +99,6 @@ def unzip_dataset() -> None:
 
 
 class SubMetaDataBase(BaseModel):
-    id: int
     name: str
 
 
@@ -191,6 +190,11 @@ def clean_dataset(filepath: Path) -> DataFrame:
     return df
 
 
+def create_db_model(data: MovieMetaData) -> Film:
+    genres: list[Genre] = [Genre.model_validate(genre) for genre in data.genres]
+    return Film()
+
+
 def import_dataset_metadata() -> None:
     df = clean_dataset(MOVIES_METADATA)
     print(df)
@@ -201,7 +205,7 @@ def import_dataset_metadata() -> None:
             print(data)
             parsed_data: MovieMetaData = MovieMetaData.model_validate(data.to_dict())
             print(parsed_data)
-            db_model = Film.model_validate(parsed_data)
+            db_model = create_db_model(parsed_data)
             print(db_model)
             progress.update(pbar, update=1)
             return
