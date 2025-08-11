@@ -1,8 +1,8 @@
 """creating base tables and relationships
 
-Revision ID: e75dc74d5aa1
+Revision ID: 377690c08bdc
 Revises: c8f4bae6a505
-Create Date: 2025-08-10 23:53:45.523035
+Create Date: 2025-08-11 00:05:22.964573
 
 """
 
@@ -13,7 +13,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "e75dc74d5aa1"
+revision: str = "377690c08bdc"
 down_revision: Union[str, Sequence[str], None] = "c8f4bae6a505"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

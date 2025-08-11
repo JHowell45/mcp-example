@@ -40,7 +40,7 @@ class ProductionCompany(DateTimestamps, table=True):
     name: str = Field(unique=True)
 
     films: list["Film"] = Relationship(
-        back_populates="production_companies", link_model=FilmGenreLink
+        back_populates="production_companies", link_model=FilmProductionCompanyLink
     )
 
 
@@ -52,7 +52,7 @@ class ProductionCountry(DateTimestamps, table=True):
     name: str = Field(unique=True)
 
     films: list["Film"] = Relationship(
-        back_populates="production_countries", link_model=FilmGenreLink
+        back_populates="production_countries", link_model=FilmProductionCountryLink
     )
 
 
@@ -64,7 +64,7 @@ class SpokenLanguage(DateTimestamps, table=True):
     name: str = Field(unique=True)
 
     films: list["Film"] = Relationship(
-        back_populates="spoken_language", link_model=FilmGenreLink
+        back_populates="spoken_language", cascade_delete=True
     )
 
 
@@ -88,13 +88,17 @@ class Film(DateTimestamps, table=True):
     budget: int
     revenue: int
 
-    collection_id: int = Field(
-        foreign_key=f"{FilmCollection.__tablename__}.id", ondelete="CASCADE"
+    collection_id: int | None = Field(
+        default=None,
+        foreign_key=f"{FilmCollection.__tablename__}.id",
+        ondelete="CASCADE",
     )
     collection: FilmCollection = Relationship(back_populates="films")
 
-    spoken_language_id: int = Field(
-        foreign_key=f"{SpokenLanguage.__tablename__}.id", ondelete="CASCADE"
+    spoken_language_id: int | None = Field(
+        default=None,
+        foreign_key=f"{SpokenLanguage.__tablename__}.id",
+        ondelete="CASCADE",
     )
     spoken_language: SpokenLanguage = Relationship(back_populates="films")
 

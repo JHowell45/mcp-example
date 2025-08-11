@@ -201,6 +201,8 @@ def import_dataset_metadata() -> None:
             print(data)
             parsed_data: MovieMetaData = MovieMetaData.model_validate(data.to_dict())
             print(parsed_data)
+            db_model = Film.model_validate(parsed_data)
+            print(db_model)
             progress.update(pbar, update=1)
             return
 
