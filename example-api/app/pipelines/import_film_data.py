@@ -13,7 +13,14 @@ from sqlalchemy import delete
 from sqlmodel import Session, col, func, select
 
 from app.dependencies.db import engine
-from app.models.films import Film, Genre, ProductionCompany, ProductionCountry, SpokenLanguage, FilmCollection # noqa
+from app.models.films import (  # noqa
+    Film,
+    FilmCollection,
+    Genre,
+    ProductionCompany,
+    ProductionCountry,
+    SpokenLanguage,
+)
 from app.models.vector_embeddings import Embedding, embedding_model
 
 DATASET_URL: str = (
@@ -191,9 +198,26 @@ def clean_dataset(filepath: Path) -> DataFrame:
 
 
 def create_db_model(data: MovieMetaData) -> Film:
-    genres: list[Genre] = [Genre.model_validate(genre) for genre in data.genres]
-    production_companies: list[]
-    return Film()
+    return Film(
+        imdb_id=data.imdb_id,
+        title=data.title,
+        tagline=data.tagline,
+        overview=data.overview,
+        popularity=data.popularity,
+        budget=data.budget,
+        revenue=data.revenue,
+        genres=[Genre.model_validate(genre) for genre in data.genres],
+        production_companies=[
+            ProductionCompany.model_validate(pc) for pc in data.production_companies
+        ],
+        production_countries=[
+            ProductionCountry.model_validate(pc) for pc in data.production_countries
+        ],
+        spoken_languages=[
+            SpokenLanguage.model_validate(sl) for sl in data.spoken_languages
+        ],
+        collection=FilmCollection.model_validate(data.collection),
+    )
 
 
 def import_dataset_metadata() -> None:
