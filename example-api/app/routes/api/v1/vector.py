@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 from pgvector.sqlalchemy import Vector
-from pydantic import computed_field
+from pydantic import BaseModel, computed_field
 from sqlmodel import select
 
 from app.dependencies.db import SessionDep
@@ -10,7 +10,7 @@ from app.routes.route_tags import RouteTags
 router = APIRouter(prefix="/vector", tags=[RouteTags.VECTOR])
 
 
-class VectorSearchRequest(Request):
+class VectorSearchRequest(BaseModel):
     query: str
     limit: int = 10
 
