@@ -1,3 +1,4 @@
+from sqlalchemy import BigInteger, Column
 from sqlmodel import Field, Relationship, SQLModel
 
 from .traits import DateTimestamps
@@ -89,8 +90,8 @@ class Film(DateTimestamps, table=True):
     tagline: str | None = Field(default=None)
     overview: str
     popularity: float = Field(ge=0)
-    budget: int
-    revenue: int
+    budget: int = Field(sa_column=Column(BigInteger()))
+    revenue: int = Field(sa_column=Column(BigInteger()))
 
     collection_id: int | None = Field(
         default=None,
