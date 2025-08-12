@@ -1,4 +1,5 @@
 import json
+from ast import literal_eval
 from datetime import datetime
 from pathlib import Path
 from zipfile import ZipFile
@@ -164,22 +165,16 @@ class MovieMetaData(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def collection(self) -> CollectionMetaData | None:
-        return (
-            CollectionMetaData.model_validate_json(
-                self.collection_data.replace("'", '"')
-            )
-            if self.collection_data
-            else None
-        )
+        if not self.collection_data:
+            return None
+        return CollectionMetaData.model_validate(d)
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def production_companies(self) -> list[ProductionCompanyMetaData]:
-        d = self.production_companies_data.replace("'", '"')
-        d = self.production_companies_data.replace('d"', "d'")
         return [
             ProductionCompanyMetaData.model_validate(company)
-            for company in json.loads(d)
+            for company in literal_eval(self.production_companies_data)
         ]
 
     @computed_field  # type: ignore[prop-decorator]
@@ -187,7 +182,7 @@ class MovieMetaData(BaseModel):
     def production_countries(self) -> list[ProductionCountryMetaData]:
         return [
             ProductionCountryMetaData.model_validate(country)
-            for country in json.loads(self.production_countries_data.replace("'", '"'))
+            for country in literal_eval(self.production_countries_data)
         ]
 
     @computed_field  # type: ignore[prop-decorator]
@@ -195,13 +190,14 @@ class MovieMetaData(BaseModel):
     def spoken_languages(self) -> list[SpokenLanguageMetaData]:
         return [
             SpokenLanguageMetaData.model_validate(language)
-            for language in json.loads(self.spoken_languages_data.replace("'", '"'))
+            for language in literal_eval(self.spoken_languages_data)
         ]
 
 
 def clean_dataset(filepath: Path) -> DataFrame:
     df = read_csv(filepath)
     df.replace({np.nan: None}, inplace=True)
+    df.dropna(subset=["overview"], inplace=True)
     return df
 
 
