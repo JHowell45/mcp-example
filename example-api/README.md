@@ -4,7 +4,8 @@ Basic FastAPI template. Defines a basic FastAPI app with postgres connecting wit
 
 ## Setup
 
-need to add the following to your `~/.zshrc` to get this working with the correct user for migration file permissions:
+_(This only seems to be an issue on my windows machine running on WSL2, you can ignore on a diff system or try first before adding the `DOCKER_CURRENT_USER` var)_
+You will need to add the following to your `~/.zshrc` to get this working with the correct user for migration file permissions:
 ```sh
 export DOCKER_CURRENT_USER="$(id -u):$(id -g)"
 ```
