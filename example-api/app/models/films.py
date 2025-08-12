@@ -1,3 +1,4 @@
+from pydantic import computed_field
 from sqlalchemy import BigInteger, Column
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -116,3 +117,22 @@ class Film(DateTimestamps, table=True):
     embeddings: list[FilmEmbedding] = Relationship(
         back_populates="film", cascade_delete=True
     )
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def embedding_text(self) -> str:
+        text: str = f"The films title is '{self.title}'."
+        if self.tagline:
+            text += f" The film's tagline is: {self.tagline}."
+        text += f" {self.overview}. The film has a popularity score of: {self.popularity}. The film's budget was {self.budget} and the revenue generated was {self.revenue}."
+        if self.collection:
+            text += f" This film is part of the {self.collection.name} collection."
+        if self.genres:
+            text += f" This film's genres are: {', '.join([model.name for model in self.genres])}."
+        if self.production_companies:
+            text += f" This film was produced by: {', '.join([model.name for model in self.production_companies])}."
+        if self.production_countries:
+            text += f" This film was produced in the following coutries: {', '.join([model.name for model in self.production_countries])}."
+        if self.spoken_languages:
+            text += f" The following languages can be heard in this film: {', '.join([model.name for model in self.spoken_languages])}"
+        return text

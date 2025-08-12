@@ -35,3 +35,5 @@ class FilmPublic(BaseModel):
     production_companies: list[FilmProductionCompanyPublic]
     production_countries: list[FilmProductionCountryPublic]
     spoken_languages: list[FilmSpokenLanguagePublic]
+
+    embedding_text: str
