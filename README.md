@@ -26,3 +26,5 @@ Afterwards you'll need to run the following commands to download and index the d
 - `docker-compose exec example-api-app python app/cli.py create-embeddings --reset` => This will create the embeddings for the films based on an embedding text blob which you can see defined in the Film model. This will take a _long_ time, my current machine has it running for 30~ minutes, whilst it's running you can start to search from the Open API frontend.
 
 After those two commands are finished or whilst the second one is running you can go to the vector API (localhost:90/docs) and use the `/api/v1/vector/search` endpoint to do vector search on the provided text. Results should show the associated model with the vector along with the embedding text used for creating the embedding.
+
+![alt text](public/image.png)
