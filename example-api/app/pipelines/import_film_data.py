@@ -225,16 +225,16 @@ def get_or_create_models(
     db_class: T,
     session: Session,
 ) -> list[T]:
-    models: list[T] = []
+    models_lookup: dict[str, T] = {}
     for model_data in data:
-        if model_data.name:
+        if model_data.name and model_data.name not in models_lookup:
             if db_model := session.exec(
                 select(db_class).where(db_class.name == model_data.name)
             ).first():
-                models.append(db_model)
+                models_lookup[model_data.name] = db_model
             else:
-                models.append(db_class.model_validate(model_data))
-    return list(models)
+                models_lookup[model_data.name] = db_class.model_validate(model_data)
+    return list(models_lookup.values())
 
 
 def get_or_create_collection_model(
@@ -272,16 +272,16 @@ def create_db_model(data: MovieMetaData, session: Session) -> Film:
     )
 
 
-def import_dataset_metadata(reset: bool, save_size: int) -> None:
+def import_dataset_metadata(reset: bool) -> None:
     df = clean_dataset(MOVIES_METADATA)
     print(df)
     print(df.columns)
     print(len(df))
     with Progress() as progress:
         with Session(engine) as session:
-            pbar = progress.add_task("Importing movies metadata", total=len(df))
             if reset_table(session, reset):
                 return
+            pbar = progress.add_task("Importing movies metadata", total=len(df))
             for _, data in df.iterrows():
                 parsed_data: MovieMetaData = MovieMetaData.model_validate(
                     data.to_dict()
@@ -301,7 +301,7 @@ def import_dataset_metadata(reset: bool, save_size: int) -> None:
                 progress.update(pbar, advance=1)
 
 
-def pipeline(reset: bool, chunk_size: int, save_size: int) -> None:
+def pipeline(reset: bool, chunk_size: int) -> None:
     download_datasets(chunk_size)
     unzip_dataset()
-    import_dataset_metadata(reset, save_size)
+    import_dataset_metadata(reset)
