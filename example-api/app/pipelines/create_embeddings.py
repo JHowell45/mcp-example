@@ -11,14 +11,14 @@ from app.models.films import Film
 def pipeline(reset: bool, limit: int) -> None:
     with Progress() as progress:
         with Session(engine) as session:
+            total_count: int = session.scalar(func.count(Film.id))
             if reset:
                 print("Deleting the embeddings from the table...")
                 session.exec(delete(FilmEmbedding))
                 session.commit()
                 print("Deleted all of the embeddings!")
             pbar = progress.add_task(
-                "Creating embeddings for the film data",
-                total=session.exec(func.count(Film.id)).one(),
+                "Creating embeddings for the film data", total=total_count
             )
             offset: int = 0
             while results := session.exec(
