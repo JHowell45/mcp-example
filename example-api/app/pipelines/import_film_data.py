@@ -167,7 +167,7 @@ class MovieMetaData(BaseModel):
     def collection(self) -> CollectionMetaData | None:
         if not self.collection_data:
             return None
-        return CollectionMetaData.model_validate(d)
+        return CollectionMetaData.model_validate(self.collection_data)
 
     @computed_field  # type: ignore[prop-decorator]
     @property
