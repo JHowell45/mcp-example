@@ -1,0 +1,29 @@
+from fastapi import APIRouter, Request
+from pgvector.sqlalchemy import Vector
+from pydantic import computed_field
+from sqlmodel import select
+
+from app.dependencies.db import SessionDep
+from app.models.embeddings import FilmEmbedding, embedding_model
+from app.routes.route_tags import RouteTags
+
+router = APIRouter(prefix="/vector", tags=[RouteTags.VECTOR])
+
+
+class VectorSearchRequest(Request):
+    query: str
+    limit: int = 10
+
+    @computed_field
+    @property
+    def query_embedding(self) -> Vector:
+        return embedding_model.encode(self.query)
+
+
+@router.post("/search")
+def vector_search(session: SessionDep, request: VectorSearchRequest):
+    return session.exec(
+        select(FilmEmbedding).order_by(
+            FilmEmbedding.embedding.l2_distance(request.query_embedding)
+        )
+    ).limit(request.limit)

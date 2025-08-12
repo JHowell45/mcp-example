@@ -8,4 +8,6 @@ class RouteTags(StrEnum):
     FILMS = auto()
     FILMS_COLLECTIONS = auto()
 
+    VECTOR = auto()
+
     V1 = auto()
