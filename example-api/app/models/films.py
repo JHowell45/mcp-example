@@ -1,12 +1,9 @@
-from typing import TYPE_CHECKING
-
 from sqlalchemy import BigInteger, Column
 from sqlmodel import Field, Relationship, SQLModel
 
-from .traits import DateTimestamps
+from app.models.embeddings import FilmEmbedding
 
-if TYPE_CHECKING:
-    from app.models.embeddings import FilmEmbedding
+from .traits import DateTimestamps
 
 
 class FilmGenreLink(DateTimestamps, table=True):
@@ -116,6 +113,6 @@ class Film(DateTimestamps, table=True):
         back_populates="films", link_model=FilmSpokenLanguageLink
     )
 
-    embeddings: list["FilmEmbedding"] = Relationship(
+    embeddings: list[FilmEmbedding] = Relationship(
         back_populates="film", cascade_delete=True
     )

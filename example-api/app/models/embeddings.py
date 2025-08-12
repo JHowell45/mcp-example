@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 from pgvector.sqlalchemy import Vector
 from pydantic import computed_field
 from sentence_transformers import SentenceTransformer
-from sqlmodel import Field, Relationship, SQLModel  # noqa
+from sqlmodel import Field, Relationship
 
 from .traits import DateTimestamps
 

@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Query
+from fastapi.exceptions import HTTPException
 from sqlmodel import select
 
 from app.dependencies.db import SessionDep
@@ -18,3 +19,10 @@ def all_films(
     limit: Annotated[int, Query(le=100)] = 100,
 ):
     return session.exec(select(Film).offset(offset).limit(limit)).all()
+
+
+@router.get("/{film_id}", response_model=FilmPublic)
+def get_film(film_id: int, session: SessionDep) -> Film:
+    if db_model := session.get(Film, film_id):
+        return db_model
+    raise HTTPException(status_code=404, detail="Item not found")
