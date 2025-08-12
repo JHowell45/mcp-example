@@ -227,13 +227,14 @@ def get_or_create_models(
 ) -> list[T]:
     models: list[T] = []
     for model_data in data:
-        if db_model := session.exec(
-            select(db_class).where(db_class.name == model_data.name)
-        ).first():
-            models.append(db_model)
-        else:
-            models.append(db_class.model_validate(model_data))
-    return models
+        if model_data.name:
+            if db_model := session.exec(
+                select(db_class).where(db_class.name == model_data.name)
+            ).first():
+                models.append(db_model)
+            else:
+                models.append(db_class.model_validate(model_data))
+    return list(models)
 
 
 def get_or_create_collection_model(
@@ -272,7 +273,6 @@ def create_db_model(data: MovieMetaData, session: Session) -> Film:
 
 
 def import_dataset_metadata(reset: bool, save_size: int) -> None:
-    current_size: int = 0
     df = clean_dataset(MOVIES_METADATA)
     print(df)
     print(df.columns)
@@ -288,13 +288,16 @@ def import_dataset_metadata(reset: bool, save_size: int) -> None:
                 )
 
                 db_model = create_db_model(parsed_data, session)
-                print(db_model)
                 session.add(db_model)
-                session.commit()
-                # current_size += 1
-                # if current_size >= save_size:
-                #     session.commit()
-                #     current_size = 0
+                try:
+                    session.commit()
+                except Exception as e:
+                    print(db_model)
+                    print(db_model.genres)
+                    print(db_model.production_companies)
+                    print(db_model.production_countries)
+                    print(db_model.spoken_languages)
+                    raise e
                 progress.update(pbar, advance=1)
 
 
