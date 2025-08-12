@@ -89,7 +89,7 @@ class Film(DateTimestamps, table=True):
     title: str
     tagline: str | None = Field(default=None)
     overview: str
-    popularity: float = Field(ge=0, le=100)
+    popularity: float = Field(ge=0)
     budget: int
     revenue: int
 

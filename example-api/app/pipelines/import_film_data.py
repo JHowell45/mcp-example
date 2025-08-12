@@ -140,7 +140,7 @@ class MovieMetaData(BaseModel):
     title: str
     tagline: str | None
     overview: str
-    popularity: float = Field(ge=0, le=100)
+    popularity: float = Field(ge=0)
     budget: int
     revenue: int
     genres_data: str = Field(alias="genres", repr=False)
@@ -197,7 +197,7 @@ class MovieMetaData(BaseModel):
 def clean_dataset(filepath: Path) -> DataFrame:
     df = read_csv(filepath)
     df.replace({np.nan: None}, inplace=True)
-    df.dropna(subset=["overview"], inplace=True)
+    df.dropna(subset=["overview", "status", "release_date"], inplace=True)
     return df
 
 
@@ -237,11 +237,9 @@ def import_dataset_metadata(reset: bool, save_size: int) -> None:
             if reset_table(session, reset):
                 return
             for _, data in df.iterrows():
-                print(data)
                 parsed_data: MovieMetaData = MovieMetaData.model_validate(
                     data.to_dict()
                 )
-                print(parsed_data)
 
                 # db_model = create_db_model(parsed_data)
                 # print(db_model)
