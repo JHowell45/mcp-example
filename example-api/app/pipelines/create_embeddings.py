@@ -31,7 +31,6 @@ def pipeline(reset: bool, limit: int) -> None:
                     db_model: FilmEmbedding = FilmEmbedding(
                         embedding=vector, film=model
                     )
-                    print(db_model)
                     session.add(db_model)
+                    progress.update(pbar, advance=1)
                 session.commit()
-                progress.update(pbar, advance=count)
