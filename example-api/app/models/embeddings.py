@@ -8,27 +8,22 @@ from sqlmodel import Field, Relationship, SQLModel  # noqa
 from .traits import DateTimestamps
 
 if TYPE_CHECKING:
-    from app.models.films import Film  # noqa
+    from app.models.films import Film
 
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+EMBEDDING_SIZE: int = 384
 
 
-class EmbeddingBase(SQLModel): ...
+class FilmEmbedding(DateTimestamps, table=True):
+    __tablename__ = "films_embeddings"
 
-
-class Embedding(EmbeddingBase, DateTimestamps, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    embedding: Any = Field(sa_type=Vector(), repr=False)
+    embedding: Any = Field(sa_type=Vector(EMBEDDING_SIZE))
 
-    # film_id: int = Field(foreign_key="film.id")
-    # film: "Film" = Relationship(back_populates="embedding")
+    film_id: int = Field(foreign_key="films.id", ondelete="CASCADE")
+    film: Film = Relationship(back_populates="embeddings")
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def embedding_size(self) -> int:
         return len(self.embedding)
-
-
-class FilmEmbeddingPublic(EmbeddingBase):
-    id: int
-    embedding_size: int
