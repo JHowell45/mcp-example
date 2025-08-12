@@ -2,6 +2,7 @@ import json
 from ast import literal_eval
 from datetime import datetime
 from pathlib import Path
+from typing import TypeVar
 from zipfile import ZipFile
 
 import numpy as np
@@ -38,6 +39,8 @@ FILENAME: str = "movies-dataset.zip"
 SAVE_PATH: Path = SAVE_DIRECTORY / FILENAME
 
 MOVIES_METADATA: Path = SAVE_DIRECTORY / "movies_metadata.csv"
+
+T = TypeVar("T")
 
 
 def clean_data(unclean: DataFrame) -> DataFrame:
@@ -209,7 +212,43 @@ def clean_dataset(filepath: Path) -> DataFrame:
     return df
 
 
-def create_db_model(data: MovieMetaData) -> Film:
+DataT = (
+    list[GenreMetaData]
+    | list[ProductionCompanyMetaData]
+    | list[ProductionCountryMetaData]
+    | list[SpokenLanguageMetaData]
+)
+
+
+def get_or_create_models(
+    data: DataT,
+    db_class: T,
+    session: Session,
+) -> list[T]:
+    models: list[T] = []
+    for model_data in data:
+        if db_model := session.exec(
+            select(db_class).where(db_class.name == model_data.name)
+        ).first():
+            models.append(db_model)
+        else:
+            models.append(db_class.model_validate(model_data))
+    return models
+
+
+def get_or_create_collection_model(
+    collection: CollectionMetaData | None, session: Session
+) -> FilmCollection | None:
+    if collection:
+        if db_model := session.exec(
+            select(FilmCollection).where(FilmCollection.name == collection.name)
+        ).first():
+            return db_model
+        return FilmCollection.model_validate(collection)
+    return None
+
+
+def create_db_model(data: MovieMetaData, session: Session) -> Film:
     return Film(
         imdb_id=data.imdb_id,
         title=data.title,
@@ -218,19 +257,17 @@ def create_db_model(data: MovieMetaData) -> Film:
         popularity=data.popularity,
         budget=data.budget,
         revenue=data.revenue,
-        genres=[Genre.model_validate(genre) for genre in data.genres],
-        production_companies=[
-            ProductionCompany.model_validate(pc) for pc in data.production_companies
-        ],
-        production_countries=[
-            ProductionCountry.model_validate(pc) for pc in data.production_countries
-        ],
-        spoken_languages=[
-            SpokenLanguage.model_validate(sl) for sl in data.spoken_languages
-        ],
-        collection=FilmCollection.model_validate(data.collection)
-        if data.collection
-        else None,
+        genres=get_or_create_models(data.genres, Genre, session),
+        production_companies=get_or_create_models(
+            data.production_companies, ProductionCompany, session
+        ),
+        production_countries=get_or_create_models(
+            data.production_countries, ProductionCountry, session
+        ),
+        spoken_languages=get_or_create_models(
+            data.spoken_languages, SpokenLanguage, session
+        ),
+        collection=get_or_create_collection_model(data.collection, session),
     )
 
 
@@ -250,7 +287,7 @@ def import_dataset_metadata(reset: bool, save_size: int) -> None:
                     data.to_dict()
                 )
 
-                db_model = create_db_model(parsed_data)
+                db_model = create_db_model(parsed_data, session)
                 print(db_model)
                 session.add(db_model)
                 session.commit()

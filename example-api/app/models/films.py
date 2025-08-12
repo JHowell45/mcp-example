@@ -1,4 +1,4 @@
-from sqlmodel import Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
 from .traits import DateTimestamps
 
@@ -27,56 +27,55 @@ class FilmSpokenLanguageLink(DateTimestamps, table=True):
     film_id: int = Field(foreign_key="films.id", primary_key=True)
 
 
-class Genre(DateTimestamps, table=True):
+class FilmRelationshipBase(SQLModel):
+    name: str = Field(unique=True)
+
+
+class Genre(FilmRelationshipBase, DateTimestamps, table=True):
     __tablename__ = "genres"
 
     id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(unique=True)
 
     films: list["Film"] = Relationship(
         back_populates="genres", link_model=FilmGenreLink
     )
 
 
-class ProductionCompany(DateTimestamps, table=True):
+class ProductionCompany(FilmRelationshipBase, DateTimestamps, table=True):
     __tablename__ = "production_companies"
 
     id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(unique=True)
 
     films: list["Film"] = Relationship(
         back_populates="production_companies", link_model=FilmProductionCompanyLink
     )
 
 
-class ProductionCountry(DateTimestamps, table=True):
+class ProductionCountry(FilmRelationshipBase, DateTimestamps, table=True):
     __tablename__ = "production_countries"
 
     id: int | None = Field(default=None, primary_key=True)
     iso: str = Field(unique=True)
-    name: str = Field(unique=True)
 
     films: list["Film"] = Relationship(
         back_populates="production_countries", link_model=FilmProductionCountryLink
     )
 
 
-class SpokenLanguage(DateTimestamps, table=True):
+class SpokenLanguage(FilmRelationshipBase, DateTimestamps, table=True):
     __tablename__ = "spoken_languages"
 
     id: int | None = Field(default=None, primary_key=True)
     iso: str = Field(unique=True)
-    name: str = Field(unique=True)
 
     films: list["Film"] = Relationship(
         back_populates="spoken_languages", link_model=FilmSpokenLanguageLink
     )
 
 
-class FilmCollection(DateTimestamps, table=True):
+class FilmCollection(FilmRelationshipBase, DateTimestamps, table=True):
     __tablename__ = "collections"
     id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(unique=True)
 
     films: list["Film"] = Relationship(back_populates="collection", cascade_delete=True)
 
