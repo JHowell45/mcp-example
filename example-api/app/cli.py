@@ -5,7 +5,8 @@ from typer import Option
 
 from app.dependencies.db import engine
 from app.models.users import User
-from app.pipelines.import_film_data import pipeline
+from app.pipelines.create_embeddings import pipeline as create_embeddings_pipeline
+from app.pipelines.import_film_data import pipeline as film_import_pipeline
 
 app = typer.Typer()
 
@@ -25,7 +26,15 @@ def import_films(
     reset: bool = Option(default=False),
     chunk_size: int = Option(default=100),
 ) -> None:
-    pipeline(reset, chunk_size)
+    film_import_pipeline(reset, chunk_size)
+
+
+@app.command(help="Creates embeddings from the film data in the db")
+def create_embeddings(
+    reset: bool = Option(default=False),
+    chunk_size: int = Option(default=100),
+) -> None:
+    create_embeddings_pipeline(reset, chunk_size)
 
 
 if __name__ == "__main__":
