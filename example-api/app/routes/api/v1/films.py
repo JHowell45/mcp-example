@@ -5,8 +5,8 @@ from pydantic import BaseModel, Field
 from sqlmodel import select
 
 from app.dependencies.db import SessionDep
+from app.models.embeddings import Embedding, embedding_model
 from app.models.films import Film
-from app.models.vector_embeddings import Embedding, embedding_model
 from app.routes.api.v1.responses.embeddings import EmbeddingPublic
 
 from .responses.films import FilmPublic

@@ -21,7 +21,7 @@ class FilmEmbedding(DateTimestamps, table=True):
     embedding: Any = Field(sa_type=Vector(EMBEDDING_SIZE))
 
     film_id: int = Field(foreign_key="films.id", ondelete="CASCADE")
-    film: Film = Relationship(back_populates="embeddings")
+    film: "Film" = Relationship(back_populates="embeddings")
 
     @computed_field  # type: ignore[prop-decorator]
     @property

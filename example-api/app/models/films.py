@@ -116,6 +116,6 @@ class Film(DateTimestamps, table=True):
         back_populates="films", link_model=FilmSpokenLanguageLink
     )
 
-    embeddings: list[FilmEmbedding] = Relationship(
+    embeddings: list["FilmEmbedding"] = Relationship(
         back_populates="film", cascade_delete=True
     )
