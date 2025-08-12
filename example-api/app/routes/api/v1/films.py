@@ -6,10 +6,11 @@ from sqlmodel import select
 
 from app.dependencies.db import SessionDep
 from app.models.films import Film
+from app.routes.route_tags import RouteTags
 
 from .responses.films import FilmPublic
 
-router = APIRouter(prefix="/films", tags=["Films"])
+router = APIRouter(prefix="/films", tags=[RouteTags.FILMS])
 
 
 @router.get("/", response_model=list[FilmPublic])

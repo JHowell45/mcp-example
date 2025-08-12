@@ -1,6 +1,9 @@
 from fastapi import APIRouter
 
-from . import films
+from app.routes.route_tags import RouteTags
 
-router = APIRouter(prefix="/v1", tags=["V1"])
+from . import film_collections, films
+
+router = APIRouter(prefix="/v1", tags=[RouteTags.V1])
 router.include_router(films.router)
+router.include_router(film_collections.router)
