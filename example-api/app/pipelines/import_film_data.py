@@ -136,7 +136,7 @@ class SpokenLanguageMetaData(BaseModel):
 
 
 class MovieMetaData(BaseModel):
-    imdb_id: str
+    imdb_id: str | None
     title: str
     tagline: str | None
     overview: str
@@ -231,9 +231,10 @@ def import_dataset_metadata(reset: bool, save_size: int) -> None:
     df = clean_dataset(MOVIES_METADATA)
     print(df)
     print(df.columns)
+    print(len(df))
     with Progress() as progress:
-        pbar = progress.add_task("Importing movies metadata", total=len(df))
         with Session(engine) as session:
+            pbar = progress.add_task("Importing movies metadata", total=len(df))
             if reset_table(session, reset):
                 return
             for _, data in df.iterrows():
@@ -248,7 +249,7 @@ def import_dataset_metadata(reset: bool, save_size: int) -> None:
                 # if current_size >= save_size:
                 #     session.commit()
                 #     current_size = 0
-                progress.update(pbar, update=1)
+                progress.update(pbar, advance=1)
 
 
 def pipeline(reset: bool, chunk_size: int, save_size: int) -> None:
