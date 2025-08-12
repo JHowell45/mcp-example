@@ -37,3 +37,9 @@ class FilmPublic(BaseModel):
     spoken_languages: list[FilmSpokenLanguagePublic]
 
     embedding_text: str
+
+
+class FilmEmbeddingTextPublic(BaseModel):
+    id: int
+    title: str
+    embedding_text: str
