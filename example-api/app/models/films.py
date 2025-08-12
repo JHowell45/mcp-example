@@ -84,7 +84,7 @@ class Film(DateTimestamps, table=True):
     __tablename__ = "films"
 
     id: int | None = Field(default=None, primary_key=True)
-    imdb_id: str
+    imdb_id: str | None = Field(nullable=True)
     title: str
     tagline: str | None = Field(default=None)
     overview: str
