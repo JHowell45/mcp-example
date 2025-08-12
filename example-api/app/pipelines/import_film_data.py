@@ -27,7 +27,6 @@ from app.models.films import (
     ProductionCountry,
     SpokenLanguage,
 )
-from app.models.vector_embeddings import Embedding, embedding_model
 
 DATASET_URL: str = (
     "https://www.kaggle.com/api/v1/datasets/download/rounakbanik/the-movies-dataset"
@@ -66,39 +65,6 @@ def reset_table(session: Session, reset: bool) -> bool:
         if count > 0:
             print("Data already exists!")
     return True
-
-
-def import_pipeline(filepath: Path, reset: bool):
-    df: DataFrame = clean_data(read_csv(filepath))
-    print(df)
-    with Progress() as progress:
-        with Session(engine) as session:
-            if reset_table(session, reset):
-                return
-            pbar = progress.add_task("Importing Film CSV Data...", total=df.shape[0])
-            for row in df.iterrows():
-                data = FilmData(**row[1].to_dict())
-                director = session.exec(
-                    select(FilmDirector).where(FilmDirector.name == data.director)
-                ).first()
-                if director is None:
-                    director = FilmDirector(name=data.director)
-
-                created_film = Film(
-                    name=data.title,
-                    overview=data.overview,
-                    release_year=data.release_year,
-                    runtime_minutes=data.runtime_minutes,
-                    imdb_rating=data.imdb_rating,
-                    meta_score=data.meta_score,
-                    director=director,
-                )
-                created_film.embedding = Embedding(
-                    embedding=embedding_model.encode(created_film.embedding_text)
-                )
-                session.add(created_film)
-                session.commit()
-                progress.update(pbar, advance=1)
 
 
 def download_datasets(chunk_size: int) -> None:
