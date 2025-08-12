@@ -17,6 +17,10 @@ from app.dependencies.db import engine
 from app.models.films import (
     Film,
     FilmCollection,
+    FilmGenreLink,
+    FilmProductionCompanyLink,
+    FilmProductionCountryLink,
+    FilmSpokenLanguageLink,
     Genre,
     ProductionCompany,
     ProductionCountry,
@@ -43,18 +47,22 @@ def clean_data(unclean: DataFrame) -> DataFrame:
 
 
 def reset_table(session: Session, reset: bool) -> bool:
+    if reset:
+        print("Deleting all film data...")
+        session.exec(delete(FilmGenreLink))
+        session.exec(delete(FilmSpokenLanguageLink))
+        session.exec(delete(FilmProductionCompanyLink))
+        session.exec(delete(FilmProductionCountryLink))
+        session.exec(delete(Film))
+
+        session.commit()
+        print("All film Data deleted!")
+        return False
     if count := session.exec(select(func.count(col(Film.id)))).one():
         print(count)
         if count > 0:
-            if reset:
-                print("Deleting all film data...")
-                session.exec(delete(Film))
-                session.commit()
-                print("All Firm Data deleted!")
-            else:
-                print("Data already exists!")
-                return True
-    return False
+            print("Data already exists!")
+    return True
 
 
 def import_pipeline(filepath: Path, reset: bool):
@@ -242,9 +250,10 @@ def import_dataset_metadata(reset: bool, save_size: int) -> None:
                     data.to_dict()
                 )
 
-                # db_model = create_db_model(parsed_data)
-                # print(db_model)
-                # session.add(db_model)
+                db_model = create_db_model(parsed_data)
+                print(db_model)
+                session.add(db_model)
+                session.commit()
                 # current_size += 1
                 # if current_size >= save_size:
                 #     session.commit()
